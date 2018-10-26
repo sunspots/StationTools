@@ -14,7 +14,6 @@ namespace StationTools.Wiki
             "! colspan=\"2\" rowspan=\"1\" class=\"unsortable\" |'''Pressure (Pa)'''",
             "! colspan=\"2\" rowspan=\"1\" class=\"unsortable\" |'''Temperature (K)'''",
             "! colspan=\"2\" rowspan=\"1\" class=\"unsortable\" |'''Temperature (&#176;C)'''",
-            "! colspan=\"1\" rowspan=\"2\" class=\"unsortable\" |'''Notes'''",
             "|-",
             "! '''Min'''",
             "! '''Max'''",
@@ -33,6 +32,10 @@ namespace StationTools.Wiki
         }
 
         string GetReagentItem(string name) {
+            if (name == "Carbon" || name == "Hydrocarbon")
+            {
+                name = "Coal";
+            }
             return Utils.OreGot(name, true);
         }
 
@@ -46,17 +49,16 @@ namespace StationTools.Wiki
             string name = Utils.OreGot(item.name, true);
             string value = Utils.FormatNumber(item.value);
 
-            var imgName = name;
             if (name == "Carbon" || name == "Hydrocarbon")
             {
-                imgName = "ItemCoalOre";
+                name = "ItemCoalOre";
             }
 
             return String.Format("<div class=\"stationeers-icon\">[[File:{0}.png|link={1}]] <div class=\"stationeers-icon-text\">{2}</div></div>",
-                                 imgName, GetTranslatedName(name), value);
+                                 name, GetTranslatedName(name), value);
         }
 
-        static void evenRatio(List<RecipeItem> items) {
+        static void EvenRatio(List<RecipeItem> items) {
             items = items.FindAll(i => i.value > 0);
             if (items.Count() == 2) {
                 var sorted = items.OrderBy(p => p.value > 0 ? p.value : float.MaxValue);
@@ -79,10 +81,11 @@ namespace StationTools.Wiki
 
         string GetFurnaceRecipeItems(List<RecipeItem> items)
         {
-            evenRatio(items);
+            EvenRatio(items);
             return String.Join("<br>", items.FindAll(i => (i.value > 0 || (i.start != 0 || i.stop != 0))).FindAll(i => (i.name != "Temperature" && i.name != "Pressure") ).Select(item =>
             {
-                return String.Format("{0} [[{1}|{2}]]", GetRecipeIcon(item), GetTranslatedName(GetReagentItem(item.name)), item.name);
+                string name = (item.name == "Carbon") || (item.name == "Hydrocarbon") ? "Coal" : item.name;
+                return String.Format("{0} [[{1}|{2}]]", GetRecipeIcon(item), GetTranslatedName(GetReagentItem(item.name)), name);
             }));
         }
 
@@ -98,7 +101,7 @@ namespace StationTools.Wiki
             {
                 return;
             }
-            String.Format(new CultureInfo("en-US"), "{0:0.##} {1}", 10, "as");
+
             string pstart = p != null ? WrapOriginal(Utils.MetricPrefix(p.start, "k") + "Pa", p.start + " kPa") : "";
             string pstop = p != null ? WrapOriginal(Utils.MetricPrefix(p.stop, "k") + "Pa", p.stop + " kPa") : "";
             string tstart = p != null ? t.start + "K" : "";
@@ -118,8 +121,7 @@ namespace StationTools.Wiki
                     "| style=\"text-align:center;\"| {6}",
                     "| style=\"text-align:center;\"| {7}",
                     "| style=\"text-align:center;\"| {8}",
-                    "| style=\"text-align:center;\"| {9}",
-                    "| {{{{{{{10}Notes|}}}}}}"
+                    "| style=\"text-align:center;\"| {9}"
                 ),
                 GetItemIcon(recipe.prefabName, 1.0f, inputIngots),
                 GetTranslatedName(recipe.prefabName),
@@ -130,8 +132,7 @@ namespace StationTools.Wiki
                 tstart,
                 tstop,
                 tstartC,
-                tstopC,
-                recipe.prefabName.Substring("Item".Length)
+                tstopC
             ));
         }
 
@@ -141,10 +142,12 @@ namespace StationTools.Wiki
             var recipes = base.recipes["FurnaceRecipes"];
             foreach (Recipe recipe in recipes)
             {
+                if (recipe.recipe.Any(i => i.name == "Hydrocarbon")) continue;
+
                 WikiTableRow(recipe, false);
             }
             Console.WriteLine("|-");
-            Console.WriteLine("! colspan=\"9\" | {0} - {1} <span class=\"right\">[[Furnace/Recipes|/Recipes]]</span>", version.updateVersion, version.updateDate);
+            Console.WriteLine("! colspan=\"8\" | {0} - {1} <span class=\"right\">[[Furnace/Recipes|/Recipes]]</span>", version.updateVersion, version.updateDate);
             Console.WriteLine(wikiTableEnd);
 
         }

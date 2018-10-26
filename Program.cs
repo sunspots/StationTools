@@ -36,7 +36,6 @@ namespace StationTools
         }
 
         static void handleWiki(ArraySegment<string> args) {
-            Console.WriteLine(args);
             switch (args[0])
             {
                 case "furnace":

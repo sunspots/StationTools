@@ -33,7 +33,7 @@ namespace StationTools
 
         // TODO: Generate from files
         private static List<string> ores = new List<string> {
-            "Iron", "Gold", "Copper", "Silver", "Lead", "Nickel", "Silicon", "Uranium"
+            "Iron", "Gold", "Copper", "Silver", "Lead", "Nickel", "Silicon", "Uranium", "Coal"
         };
 
 
